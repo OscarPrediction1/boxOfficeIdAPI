@@ -18,3 +18,5 @@ npm start
 Query for movie "Birdman" that was released in year "2014" by fuzzy searching also available via:
 
 /?movie=Birdmans&year=2013
+
+*Make sure that ?movie is URL-Encoded*
