@@ -80,7 +80,7 @@ mongodb.connect(config.MONGODB_URL, function(err, db) {
 	// collections
 	global.boxOfficeCol = db.collection("boxoffice_movies");
 
-	server.listen(1337, function() {
+	server.listen(8081, function() {
 		console.log("%s listening at %s", server.name, server.url);
 	});
 });
