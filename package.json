@@ -1,0 +1,19 @@
+{
+	"name": "boxOfficeIdAPI",
+	"description": "Give me a movie title and it's year and I'll give you the BoxOfficeId :-P",
+	"version": "1.0.0",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/OscarPrediction1/boxOfficeIdAPI.git"
+	},
+	"main": "server.js",
+	"scripts": {
+		"start": "node server.js"
+	},
+	"dependencies": {
+		"restify": "4.0.3",
+		"levenshtein": "1.0.5",
+		"mongodb": "2.0.48",
+		"moment": "2.10.6"
+	}
+}
