@@ -27,7 +27,8 @@ server.get("/", function(req, res, next) {
 	}, {
 		"fields": {
 			"release": true,
-			"name": true
+			"name": true,
+			"boxOfficeId": true
 		}
 	}).toArray(function(err, movies) {
 
@@ -47,7 +48,8 @@ server.get("/", function(req, res, next) {
 			global.boxOfficeCol.find({}, {
 				"fields": {
 					"release": true,
-					"name": true
+					"name": true,
+					"boxOfficeId": true
 				}
 			}).toArray(function(err, movies) {
 
