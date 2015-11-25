@@ -50,7 +50,7 @@ server.get("/", function(req, res, next) {
 					return Math.abs(parseInt(req.params.year) - moment(item.release).year()) <= 1;
 				});
 
-				var min_lev = 9999999999.0;
+				var min_lev = Number.MAX_VALUE;
 				var min_movie = null;
 
 				// levensthein distance of movie titles
@@ -64,9 +64,7 @@ server.get("/", function(req, res, next) {
 					}
 				}
 
-				if (min_movie) res.send(min_movie);
-				else res.send([]);
-
+				res.send(min_movie || []);
 				return next();
 			}
 
@@ -98,7 +96,7 @@ server.get("/", function(req, res, next) {
 // mongodb connect
 mongodb.connect(config.MONGODB_URL, function(err, db) {
 
-	if (err) console.log(err);
+	if (err) throw err;
 
 	// collections
 	global.boxOfficeCol = db.collection("boxoffice_movies");
