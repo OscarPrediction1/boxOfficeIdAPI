@@ -53,6 +53,11 @@ server.get("/", function(req, res, next) {
 				}
 			}).toArray(function(err, movies) {
 
+				// filter out years
+				movies = movies.filter(function(item) {
+					return years.indexOf(moment(item.release).year);
+				});
+
 				var min_lev = 9999999999.0;
 				var min_movie = null;
 
@@ -61,7 +66,7 @@ server.get("/", function(req, res, next) {
 					var lev = new Levenshtein(movies[i].name, req.params.movie);
 					var l = lev.valueOf();
 
-					if (l < min_lev && years.indexOf(moment(movies[i].release).year)) {
+					if (l < min_lev) {
 						min_lev = l;
 						min_movie = movies[i];
 					}
