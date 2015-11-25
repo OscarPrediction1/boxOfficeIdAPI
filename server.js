@@ -3,7 +3,12 @@ var mongodb = require("mongodb");
 var moment = require("moment");
 var Levenshtein = require("levenshtein");
 var logger = require("morgan");
+var NodeCache = require("node-cache");
 var config = require("./config");
+var cache = new NodeCache({
+	stdTTL: 3600,
+	checkperiod: 120
+});
 
 var server = restify.createServer({
 	name: "boxOfficeIdAPI",
@@ -47,13 +52,7 @@ server.get("/", function(req, res, next) {
 
 		} else {
 
-			global.boxOfficeCol.find({}, {
-				"fields": {
-					"release": true,
-					"name": true,
-					"boxOfficeId": true
-				}
-			}).toArray(function(err, movies) {
+			var processAllMovies = function(movies) {
 
 				// filter out years
 				movies = movies.filter(function(item) {
@@ -77,6 +76,35 @@ server.get("/", function(req, res, next) {
 				if (min_movie) res.send(min_movie);
 				else res.send([]);
 				return next();
+			}
+
+			// check if value is in cache
+			cache.get("all_movies", function(err, value) {
+
+				// all movies not found in cache?
+				if (err || value == undefined) {
+
+					console.log("mongodb fetch");
+
+					// attempt full table scan
+					global.boxOfficeCol.find({}, {
+						"fields": {
+							"release": true,
+							"name": true,
+							"boxOfficeId": true
+						}
+					}).toArray(function(err, movies) {
+
+						// cache movies result for blazing fast future queries
+						cache.set("all_movies", movies);
+
+						processAllMovies(movies);
+					});
+
+				} else {
+					console.log("cache hit");
+					processAllMovies(value);
+				}
 			});
 		}
 	});
