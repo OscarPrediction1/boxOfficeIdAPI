@@ -15,7 +15,6 @@
 		"levenshtein": "1.0.5",
 		"mongodb": "2.0.48",
 		"moment": "2.10.6",
-		"morgan": "^1.6.1",
-		"node-cache": "3.0.0"
+		"morgan": "^1.6.1"
 	}
 }

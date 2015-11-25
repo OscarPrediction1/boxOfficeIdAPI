@@ -3,12 +3,10 @@ var mongodb = require("mongodb");
 var moment = require("moment");
 var Levenshtein = require("levenshtein");
 var logger = require("morgan");
-var NodeCache = require("node-cache");
 var config = require("./config");
-var cache = new NodeCache({
-	stdTTL: 3600,
-	checkperiod: 120
-});
+
+// movie cache
+var cached_movies = null;
 
 var server = restify.createServer({
 	name: "boxOfficeIdAPI",
@@ -20,13 +18,6 @@ server.use(restify.bodyParser());
 server.use(logger("dev"));
 
 server.get("/", function(req, res, next) {
-
-	// fuzzy year query
-	var years = [
-		"" + parseInt(req.params.year) - 1,
-		"" + parseInt(req.params.year),
-		"" + parseInt(req.params.year) + 1
-	];
 
 	// query box office for direct movie name and year
 	global.boxOfficeCol.find({
@@ -75,37 +66,31 @@ server.get("/", function(req, res, next) {
 
 				if (min_movie) res.send(min_movie);
 				else res.send([]);
+
 				return next();
 			}
 
 			// check if value is in cache
-			cache.get("all_movies", function(err, value) {
+			if (!cached_movies) {
 
-				// all movies not found in cache?
-				if (err || value == undefined) {
+				// attempt full table scan
+				global.boxOfficeCol.find({}, {
+					"fields": {
+						"release": true,
+						"name": true,
+						"boxOfficeId": true
+					}
+				}).toArray(function(err, movies) {
 
-					console.log("mongodb fetch");
+					// cache movies result for blazing fast future queries
+					cached_movies = movies;
 
-					// attempt full table scan
-					global.boxOfficeCol.find({}, {
-						"fields": {
-							"release": true,
-							"name": true,
-							"boxOfficeId": true
-						}
-					}).toArray(function(err, movies) {
+					processAllMovies(movies);
+				});
 
-						// cache movies result for blazing fast future queries
-						cache.set("all_movies", movies);
-
-						processAllMovies(movies);
-					});
-
-				} else {
-					console.log("cache hit");
-					processAllMovies(value);
-				}
-			});
+			} else {
+				processAllMovies(cached_movies);
+			}
 		}
 	});
 });
