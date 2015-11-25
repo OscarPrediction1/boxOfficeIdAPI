@@ -2,6 +2,7 @@ var restify = require("restify");
 var mongodb = require("mongodb");
 var moment = require("moment");
 var Levenshtein = require("levenshtein");
+var logger = require("morgan");
 var config = require("./config");
 
 var server = restify.createServer({
@@ -11,6 +12,7 @@ var server = restify.createServer({
 server.use(restify.acceptParser(server.acceptable));
 server.use(restify.queryParser());
 server.use(restify.bodyParser());
+server.use(logger("dev"));
 
 server.get("/", function(req, res, next) {
 
@@ -40,8 +42,6 @@ server.get("/", function(req, res, next) {
 		// movies available?
 		if (movies.length > 0) {
 
-			console.log("direct found");
-
 			res.send(movies);
 			return next();
 
@@ -59,8 +59,6 @@ server.get("/", function(req, res, next) {
 				movies = movies.filter(function(item) {
 					return Math.abs(parseInt(req.params.year) - moment(item.release).year()) <= 1;
 				});
-
-				console.log("indirect found");
 
 				var min_lev = 9999999999.0;
 				var min_movie = null;
