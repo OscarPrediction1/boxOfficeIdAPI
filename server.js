@@ -61,7 +61,7 @@ server.get("/", function(req, res, next) {
 					var lev = new Levenshtein(movies[i].name, req.params.movie);
 					var l = lev.valueOf();
 
-					if (l < min_lev) {
+					if (l < min_lev && years.indexOf(moment(movies[i].release).year)) {
 						min_lev = l;
 						min_movie = movies[i];
 					}
@@ -76,6 +76,8 @@ server.get("/", function(req, res, next) {
 
 // mongodb connect
 mongodb.connect(config.MONGODB_URL, function(err, db) {
+
+	if (err) console.log(err);
 
 	// collections
 	global.boxOfficeCol = db.collection("boxoffice_movies");
