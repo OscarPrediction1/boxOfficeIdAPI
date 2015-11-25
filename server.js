@@ -16,9 +16,9 @@ server.get("/", function(req, res, next) {
 
 	// fuzzy year query
 	var years = [
-		parseInt(req.params.year) - 1,
-		parseInt(req.params.year),
-		parseInt(req.params.year) + 1
+		"" + parseInt(req.params.year) - 1,
+		"" + parseInt(req.params.year),
+		"" + parseInt(req.params.year) + 1
 	];
 
 	// query box office for direct movie name and year
@@ -32,13 +32,15 @@ server.get("/", function(req, res, next) {
 		}
 	}).toArray(function(err, movies) {
 
+		// filter out years
+		movies = movies.filter(function(item) {
+			return Math.abs(parseInt(req.params.year) - moment(item.release).year()) <= 1;
+		});
+
 		// movies available?
 		if (movies.length > 0) {
 
-			// filter out years
-			movies = movies.filter(function(item) {
-				return years.indexOf(moment(item.release).year);
-			});
+			console.log("direct found");
 
 			res.send(movies);
 			return next();
@@ -55,8 +57,10 @@ server.get("/", function(req, res, next) {
 
 				// filter out years
 				movies = movies.filter(function(item) {
-					return years.indexOf(moment(item.release).year);
+					return Math.abs(parseInt(req.params.year) - moment(item.release).year()) <= 1;
 				});
+
+				console.log("indirect found");
 
 				var min_lev = 9999999999.0;
 				var min_movie = null;
@@ -66,13 +70,14 @@ server.get("/", function(req, res, next) {
 					var lev = new Levenshtein(movies[i].name, req.params.movie);
 					var l = lev.valueOf();
 
-					if (l < min_lev) {
+					if (l < min_lev && l <= 1) {
 						min_lev = l;
 						min_movie = movies[i];
 					}
 				}
 
-				res.send(min_movie);
+				if (min_movie) res.send(min_movie);
+				else res.send([]);
 				return next();
 			});
 		}
